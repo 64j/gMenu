@@ -27,8 +27,6 @@ class gMenu {
 				}
 			}
     }
-    $this->parentTree   = $this->_getParentIds($this->this_id);
-    $this->parentTree[] = $this->this_id;
     if (!$this->userCfg) {
       $this->setTemplates(array_filter($this->_tpl));
     }
@@ -36,8 +34,10 @@ class gMenu {
     if (in_array($this->this_id, array_keys($this->_map))) {
       $this->_here = $this->this_id;
     } else {
-      $this->_here = $this->modx->db->getValue($this->query("SELECT parent FROM ". $this->modx->getFullTableName("site_content") ." WHERE id=" . $this->this_id . " LIMIT 1"));
+      $this->_here = $this->this_id = $this->modx->db->getValue($this->query("SELECT parent FROM ". $this->modx->getFullTableName("site_content") ." WHERE id=" . $this->this_id . " LIMIT 1"));
     }
+    $this->parentTree   = $this->_getParentIds($this->this_id);
+    $this->parentTree[] = $this->this_id;
     return $this->buildMenu($this->_cfg['id']);
   }
 	private	function _getParentIds($id, $height= 10) {
