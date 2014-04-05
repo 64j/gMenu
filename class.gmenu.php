@@ -64,10 +64,6 @@ class gMenu {
     while ($row = $this->modx->db->getRow($result)) {
       $tpls[$row['name']] = str_replace(array('[+', '+]'), array('%', '%'), $row['snippet']);
     }
-	/*			foreach ($chunks as $k => $v) {
-					$chunk = file_get_contents(MODX_BASE_PATH . "assets/cache/chunks/" . $v . "_" . md5($v) . ".db");
-					$tpls[$v] = str_replace(array('[+', '+]'), array('%', '%'), $chunk);
-				}*/
     foreach ($this->_tpl as $k => $v) {
       $out_tpls[$k] = $tpls[$v];
     }
