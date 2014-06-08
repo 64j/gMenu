@@ -1,4 +1,4 @@
 gMenu
 =====
 
-замена сниппету Wayfinder для MODx 
+замена сниппета Wayfinder для MODx 
