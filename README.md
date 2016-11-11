@@ -3,6 +3,16 @@ gMenu
 
 замена сниппета Wayfinder для MODx 
 
+####Установка
+Скопировать в папку assets/snippets/gmenu/
+
+Создать сниппет с кодом
+```PHP
+<?php
+return require MODX_BASE_PATH.'assets/snippets/gmenu/snippet.gmenu.php';
+?>
+```
+
 ####UPD:
 Добавлена возможность использования шаблонов в зависимости от уровня сложенности
 
