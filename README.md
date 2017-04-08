@@ -28,17 +28,17 @@ return require MODX_BASE_PATH.'assets/snippets/gmenu/snippet.gmenu.php';
 
 <h5>Шаблоны</h5>
 <p>
-<b>&outerTpl</b> обёртка<br>
-<b>&rowTpl</b> пункт<br>
-<b>&parentRowTpl</b> родитель<br>
-<b>&parentRowHereTpl</b> текущий активный родитель<br>
-<b>&hereTpl</b> текущий активный пункт<br>
-<b>&innerTpl</b> обёртка второго уровня и далее<br>
-<b>&innerRowTpl</b> пункт второго уровня и далее<br>
-<b>&innerHereTpl</b> активный пункт второго уровня и далее<br>
-<b>&activeParentRowTpl</b> активный родитель<br>
-<b>&categoryFoldersTpl</b> категория (если шаблон blank или в аттрибутах ссылки указано rel="category")<br>
-<b>&startItemTpl</b> первый уровень меню<br>
+<b>&outerTpl</b> - обёртка<br>
+<b>&rowTpl</b> - пункт<br>
+<b>&parentRowTpl</b> - родитель<br>
+<b>&parentRowHereTpl</b> - текущий активный родитель<br>
+<b>&hereTpl</b> - текущий активный пункт<br>
+<b>&innerTpl</b> - обёртка второго уровня и далее<br>
+<b>&innerRowTpl</b> - пункт второго уровня и далее<br>
+<b>&innerHereTpl</b> - активный пункт второго уровня и далее<br>
+<b>&activeParentRowTpl</b> - активный родитель<br>
+<b>&categoryFoldersTpl</b> - категория (если шаблон blank или в аттрибутах ссылки указано rel="category")<br>
+<b>&startItemTpl</b> - первый уровень меню<br>
 </p>
 
 <h5>Классы</h5>
@@ -53,6 +53,13 @@ return require MODX_BASE_PATH.'assets/snippets/gmenu/snippet.gmenu.php';
 <b>&innerClass</b> - класс для обёртки второго уровня <br>
 </p>
 <br>
+<h5>Вызов сниппета</h5>
+
+```CODE
+[[gmenu?
+&startId=`0`
+]]
+```
 <br>
 
 <h3>UPD: 04.2017</h3>
