@@ -23,8 +23,7 @@ $gm->_cfg = array(
 	'hideSubMenus' => isset($hideSubMenus) ? $hideSubMenus : false,
 	'hideFirstLevel' => isset($hideSubMenus) ? $hideSubMenus : false,
 	'limit' => isset($limit) ? $limit : 0,
-	'staticKeys' => isset($staticKeys) && $staticKeys == 1 ? true : false,
-	'cachefile' => isset($cachefile) ? $cachefile : MODX_BASE_PATH . 'assets/cache/gmenu3.pageCache.php',
+	'useCache' => isset($useCache) ? $useCache : 1,
 	'level' => isset($level) ? $level : '',
 	'tvList' => isset($tvList) ? $tvList : ''
 );
