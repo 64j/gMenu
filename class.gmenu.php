@@ -22,8 +22,7 @@ class gMenu {
 			'[+wf.id+]',
 			'[+wf.alias+]',
 			'[+wf.attributes+]',
-			'[+wf.docid+]',
-			'[+wf.linktext_hash+]'
+			'[+wf.docid+]'
 		),
 		'wrapperLevel' => array(
 			'[+wf.wrapper+]',
