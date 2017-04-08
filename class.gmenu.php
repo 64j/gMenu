@@ -31,65 +31,79 @@ class gMenu {
 		)
 	);
 
+	/**
+	 * @return mixed|string
+	 */
 	public function run() {
 		global $modx;
 
 		$this->this_id = $modx->documentIdentifier;
+		
+		$gmenu_aliasListing = false;
+		$caheFile = MODX_BASE_PATH . 'assets/cache/gmenu_' . md5(serialize($this->_cfg)) . '.pageCache.php';
+		
+		if($this->_cfg['useCache'] && file_exists($caheFile)) {
+			include($caheFile);
+			$gmenu_aliasListing = true;
+		}
 
-		if(empty($modx->gmenu_aliasListing)) {
-			$fields = "sc.id, sc.parent, sc.pagetitle, sc.longtitle, sc.menutitle, sc.type, IF(sc.type='reference',(SELECT alias FROM " . $modx->getFullTableName("site_content") . " WHERE id=sc.content),sc.alias) as alias, sc.link_attributes, sc.template";
-
-			$sql = $modx->db->query("SELECT " . $fields . "  FROM " . $modx->getFullTableName("site_content") . " sc WHERE sc.hidemenu=0 AND sc.deleted=0 AND sc.published=1 ORDER BY sc.parent, sc.menuindex");
+		if(!$gmenu_aliasListing) {
+			$tmpPHP = "<?php\n";
+			
+			$sql = $modx->db->query('SELECT DISTINCT sc.id, sc.parent, sc.pagetitle, sc.longtitle, sc.menutitle, sc.type, sc.alias_visible, sc.hidemenu, sc.isfolder, IF(sc.type="reference",(SELECT CONCAT(sc2.alias, "|", sc2.parent) AS alias FROM ' . $modx->getFullTableName('site_content') . ' AS sc2 WHERE sc2.id=sc.content),sc.alias) AS alias, sc.link_attributes, sc.template  
+			FROM ' . $modx->getFullTableName("site_content") . ' sc
+			WHERE sc.hidemenu=0 AND sc.deleted=0 AND sc.published=1 AND privateweb=0
+			ORDER BY sc.parent, sc.menuindex');
 
 			while($row = $modx->db->getRow($sql)) {
 
-				if($modx->config['friendly_urls'] == 1 && $modx->config['use_alias_path'] == 1) {
-					$tmpPath = $this->getParents($row['parent']);
-					$row['alias'] = (strlen($tmpPath) > 0 ? $tmpPath . "/" : '') . $row['alias'];
-					$this->documentListing[$row['alias']] = $row['id'];
+				if(isset($modx->aliasListing[$row['id']])) {
+					$modx->aliasListing[$row['id']] = array_merge($modx->aliasListing[$row['id']], $row);
 				} else {
-					$this->documentListing[$row['alias']] = $row['id'];
-				}
 
-				if(empty($modx->aliasListing[$row['id']])) {
-					$modx->aliasListing[$row['id']] = array(
-						'id' => $row['id'],
-						'parent' => $row['parent'],
-						'pagetitle' => $row['pagetitle'],
-						'longtitle' => $row['longtitle'],
-						'menutitle' => $row['menutitle'],
-						'path' => $row['alias'],
-						'type' => $row['type'],
-						'alias' => $row['alias'],
-						'link_attributes' => $row['link_attributes'],
-						'template' => $row['template']
-					);
+					if($modx->config['friendly_urls'] == 1 && $modx->config['use_alias_path'] == 1) {
+						$tmpPath = $this->getParents($row['parent']);
+						$row['path'] = (strlen($tmpPath) > 0 ? $tmpPath : '');
+					}
+
+					$modx->aliasListing[$row['id']] = $row;
 					$this->documentMap[] = array($row['parent'] => $row['id']);
 					$this->documentListing[$row['alias']] = $row['id'];
-				} else {
-					$modx->aliasListing[$row['id']] = array_merge($modx->aliasListing[$row['id']], array(
-						'pagetitle' => $row['pagetitle'],
-						'longtitle' => $row['longtitle'],
-						'menutitle' => $row['menutitle'],
-						'path' => $row['alias'],
-						'type' => $row['type'],
-						'link_attributes' => $row['link_attributes'],
-						'template' => $row['template']
-					));
+					if($this->_cfg['useCache'] && !in_array(array("'" . $row['parent'] . "'" => "'" . $row['id'] . "'"), $this->documentMap)) {
+						$tmpPHP .= '$modx->documentMap[] ' . "= array('" . $row['parent'] . "'=>'" . $row['id'] . "');\n";
+					}
 				}
 
-				$modx->gmenu_documentMap[$row['id']] = $row['parent'];
+				if($row['type'] == 'reference') {
+					$alias = explode('|', $row['alias']);
+					if($modx->config['friendly_urls'] == 1 && $modx->config['use_alias_path'] == 1) {
+						$tmpPath = $this->getParents($alias[1]);
+						$row['path'] = (strlen($tmpPath) > 0 ? $tmpPath : '');
+					}
+					$tmpPath = $this->getParents($alias[1]);
+					$modx->aliasListing[$row['id']]['alias'] = $alias[0];
+					$modx->aliasListing[$row['id']]['path'] = $row['path'];
+				}
+				
+				if($this->_cfg['useCache']) {
+					$tmpPHP .= '$modx->aliasListing[' . $row['id'] . "] = array('id'=>'" . $modx->aliasListing[$row['id']]['id'] . "','parent'=>'" . $modx->aliasListing[$row['id']]['parent'] . "','pagetitle'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['pagetitle']) . "','longtitle'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['longtitle']) . "','menutitle'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['menutitle']) . "','path'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['path']) . "','alias'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['alias']) . "','type'=>'" . $modx->aliasListing[$row['id']]['type'] . "','link_attributes'=>'" . $this->escapeSingleQuotes($modx->aliasListing[$row['id']]['link_attributes']) . "','template'=>'" . $modx->aliasListing[$row['id']]['template'] . "','hidemenu'=>'" . $modx->aliasListing[$row['id']]['hidemenu'] . "','alias_visible'=>'" . $modx->aliasListing[$row['id']]['alias_visible'] . "','isfolder'=>" . $modx->aliasListing[$row['id']]['isfolder'] . ");\n";
+				}
 			}
-
-			$modx->gmenu_aliasListing = 1;
+			
+			if($this->_cfg['useCache']) {
+				$fgmenu = fopen($caheFile, 'w') or die("не удалось создать файл");
+				fwrite($fgmenu, $tmpPHP);
+				fclose($fgmenu);
+				unset($tmpPHP);
+			}
 		}
 
-		if($modx->gmenu_documentMap && $this->_cfg['tvList']) {
+		if($this->_cfg['tvList']) {
 			$tvList = '"' . str_replace(',', '","', $this->_cfg['tvList']) . '"';
 
 			$sql = $modx->db->query('SELECT tv.name, tvc.* FROM ' . $modx->getFullTableName('site_tmplvars') . ' AS tv
-				LEFT JOIN ' . $modx->getFullTableName('site_tmplvar_contentvalues') . ' AS tvc ON tv.id=tvc.tmplvarid
-				WHERE tv.name IN (' . $tvList . ') AND tvc.contentid IN (' . implode(',', array_keys($modx->gmenu_documentMap)) . ')');
+							JOIN ' . $modx->getFullTableName('site_tmplvar_contentvalues') . ' AS tvc ON tv.id=tvc.tmplvarid
+							WHERE tv.name IN (' . $tvList . ') AND tvc.contentid IN (' . implode(',', array_keys($modx->aliasListing)) . ')');
 			while($row = $modx->db->getRow($sql)) {
 				$modx->aliasListing[$row['contentid']]['tv'][$row['name']] = $row['value'];
 			}
@@ -111,12 +125,17 @@ class gMenu {
 			}
 		}
 
-		$this->parentTree = $this->_getParentIds($this->this_id);
+		$this->parentTree = $modx->getParentIds($this->this_id);
 		$this->parentTree[] = $this->this_id;
 
 		return $this->buildMenu($this->_cfg['id']);
 	}
 
+	/**
+	 * @param $id
+	 * @param string $path
+	 * @return string
+	 */
 	private function getParents($id, $path = '') { // modx:returns child's parent
 		global $modx;
 
@@ -135,6 +154,9 @@ class gMenu {
 		return $path;
 	}
 
+	/**
+	 *
+	 */
 	private function setTemplates() {
 		global $modx;
 		foreach($this->_tpl as $k => $v) {
@@ -142,6 +164,9 @@ class gMenu {
 		}
 	}
 
+	/**
+	 *
+	 */
 	private function checkTemplates() {
 		$nonWayfinderFields = array();
 		foreach($this->_tpl as $n => $v) {
@@ -162,6 +187,10 @@ class gMenu {
 		}
 	}
 
+	/**
+	 * @param $tpl
+	 * @return bool|string
+	 */
 	private function fetch($tpl) {
 		if($this->_tpl[$tpl] && !$this->userCfg) {
 			$template = $this->_tpl[$tpl];
@@ -174,34 +203,23 @@ class gMenu {
 		return $template;
 	}
 
-	private function _getParentIds($id, $height = 10) {
-		global $modx;
-		$parents = array();
-		while($id && $height--) {
-			$thisid = $id;
-			$id = isset($modx->aliasListing[$id]['parent']) ? $modx->aliasListing[$id]['parent'] : '';
-			if(!$id) {
-				break;
-			}
-			$parents[$thisid] = $id;
-		}
-
-		return $parents;
-	}
-
+	/**
+	 * @param $id
+	 * @return mixed|string
+	 */
 	private function buildMenu($id) {
 		global $modx;
 
 		$subMenuOutput = '';
 		$firstItem = 1;
 		$counter = 1;
-		$level = count($this->_getParentIds($id)) + 1;
-		$sub = array_keys($modx->gmenu_documentMap, $id);
+		$level = count($modx->getParentIds($id)) + 1;
+		$sub = $this->getDocsInParent($id);
 		$numSubItems = count($sub);
 
 		foreach($sub as $key) {
 			$lastItem = $counter == $numSubItems && $numSubItems > 1 ? 1 : 0;
-			$sub2 = array_keys($modx->gmenu_documentMap, $key);
+			$sub2 = $this->getDocsInParent($key);
 			$isFolder = count($sub2) ? 1 : 0;
 			if($this->_cfg['hideSubMenus']) {
 				$submenu = $this->isHere($key) ? 1 : '';
@@ -255,10 +273,38 @@ class gMenu {
 		}
 	}
 
+	/**
+	 * @param $parent
+	 * @return array
+	 */
+	private function getDocsInParent($parent) {
+		global $modx;
+		$ids = array();
+		foreach($modx->aliasListing as $key => $value) {
+			if($value['parent'] == $parent && (isset($value['hidemenu']) && $value['hidemenu'] == 0)) {
+				array_push($ids, $key);
+			}
+		}
+		return $ids;
+	}
+
+	/**
+	 * @param $id
+	 * @return bool
+	 */
 	private function isHere($id) {
 		return in_array($id, $this->parentTree);
 	}
 
+	/**
+	 * @param $classType
+	 * @param int $docId
+	 * @param int $first
+	 * @param int $last
+	 * @param int $level
+	 * @param int $isFolder
+	 * @return string
+	 */
 	private function setItemClass($classType, $docId = 0, $first = 0, $last = 0, $level = 0, $isFolder = 0) {
 		$returnClass = '';
 		if($classType === 'outercls' && !empty($this->_css['outer'])) {
@@ -289,6 +335,10 @@ class gMenu {
 		return $returnClass;
 	}
 
+	/**
+	 * @param $doc
+	 * @return mixed|string
+	 */
 	private function renderRow($doc) {
 		global $modx;
 		$out = '';
@@ -356,7 +406,7 @@ class gMenu {
 		$phArray = array(
 			$doc['submenu'] ? $this->buildMenu($doc['id']) : "",
 			$doc['class'],
-			$modx->config['friendly_url_prefix'] . $modx->aliasListing[$doc['id']]['path'] . $modx->config['friendly_url_suffix'],
+			$modx->config['friendly_url_prefix'] . ($modx->aliasListing[$doc['id']]['path'] ? $modx->aliasListing[$doc['id']]['path'] . '/' : '') . $modx->aliasListing[$doc['id']]['alias'] . $modx->config['friendly_url_suffix'],
 			$title,
 			$linktext,
 			$useId,
@@ -376,5 +426,23 @@ class gMenu {
 		}
 
 		return $out;
+	}
+
+	private function escapeSingleQuotes($s) {
+		if($s=='') return $s;
+		$q1 = array("\\", "'");
+		$q2 = array("\\\\", "\\'");
+		return str_replace($q1, $q2, $s);
+	}
+		
+	/**
+	 * deBug code
+	 *
+	 * @param $str
+	 */
+	public function dbug($str) {
+		print('<pre>');
+		print_r($str);
+		print('</pre>');
 	}
 }
