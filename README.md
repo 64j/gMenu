@@ -63,7 +63,7 @@ return require MODX_BASE_PATH.'assets/snippets/gmenu/snippet.gmenu.php';
 <br>
 
 <h3>UPD: 04.2017</h3>
-<p>Добавлена возможность использования кэш файла для каждого вызова сниппета</p>
+<p>Добавлена возможность использования кэш файла меню</p>
 
 ```CODE
 &useCache=`1`
