@@ -39,7 +39,7 @@ class gMenu {
 		$this->this_id = $modx->documentIdentifier;
 		
 		$gmenu_aliasListing = false;
-		$caheFile = MODX_BASE_PATH . 'assets/cache/gmenu_' . md5(serialize($this->_cfg)) . '.pageCache.php';
+		$caheFile = MODX_BASE_PATH . 'assets/cache/gmenu.pageCache.php';
 		
 		if($this->_cfg['useCache'] && file_exists($caheFile)) {
 			include($caheFile);
