@@ -20,9 +20,9 @@ return require MODX_BASE_PATH.'assets/snippets/gmenu/snippet.gmenu.php';
 <b>&rowIdPrefix</b> - преффикс для аттрибута id <br>
 <b>&hideSubMenus</b> - скрывать субменю  (1 / 0) <br>
 <b>&hideFirstLevel</b> - скрывать первый уровень меню (1 / 0) <br>
-<b>&limit</b> - лимит уровней (использовать level) <br>
+<b>&limit</b> - лимит уровней (использовать level) НЕ работает<br>
 <b>&useCache</b> - использовать кэш файл (1 / 0) <br>
-<b>&level</b> - количество уровней меню  <br>
+<b>&level</b> - количество уровней меню НЕ работает<br>
 <b>&tvList</b> - tv через запятую без пробелов <br>
 </p>
 
