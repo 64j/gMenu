@@ -23,7 +23,7 @@ $gm->_cfg = array(
 	'hideSubMenus' => isset($hideSubMenus) ? $hideSubMenus : false,
 	'hideFirstLevel' => isset($hideFirstLevel) ? $hideFirstLevel : false,
 	'limit' => isset($limit) ? $limit : 0,
-	'useCache' => isset($useCache) ? $useCache : 1,
+	'useCache' => isset($useCache) ? $useCache : 0,
 	'level' => isset($level) ? $level : '',
 	'tvList' => isset($tvList) ? $tvList : ''
 );
