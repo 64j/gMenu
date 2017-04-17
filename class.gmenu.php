@@ -79,7 +79,6 @@ class gMenu {
 						$tmpPath = $this->getParents($alias[1]);
 						$row['path'] = (strlen($tmpPath) > 0 ? $tmpPath : '');
 					}
-					$tmpPath = $this->getParents($alias[1]);
 					$modx->aliasListing[$row['id']]['alias'] = $alias[0];
 					$modx->aliasListing[$row['id']]['path'] = $row['path'];
 				}
